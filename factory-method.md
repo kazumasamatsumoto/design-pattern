@@ -1,10 +1,6 @@
 # Factory Method パターン
 
-## 概要
-
-Factory Method パターンは、オブジェクトの生成ロジックをサブクラスに委ねることで、オブジェクト生成の柔軟性を高めるデザインパターンです。
-
-## クラス図
+## 1. 基本構造
 
 ```mermaid
 classDiagram
@@ -38,36 +34,29 @@ classDiagram
     ConcreteCreatorB ..> ConcreteProductB
 ```
 
-## ユースケース図
+## 2. ユースケース図
 
 ```mermaid
-graph TB
-    subgraph ユースケース
-        UC1[ファイルエクスポート機能]
-        UC2[UIコンポーネント生成]
-        UC3[データベースコネクション]
-    end
+graph TD
+    A[Factory Method] --> B[PDF Exporter]
+    A --> C[Excel Exporter]
+    A --> D[Button Component]
+    A --> E[Input Field]
+    A --> F[MySQL Connection]
+    A --> G[PostgreSQL Connection]
 
-    subgraph Factory Method実装
-        FM[Factory Method] --> PDF[PDFエクスポーター]
-        FM --> Excel[Excelエクスポーター]
-        FM --> Button[ボタンコンポーネント]
-        FM --> Input[入力フィールド]
-        FM --> MySQL[MySQLコネクション]
-        FM --> Postgres[Postgresコネクション]
-    end
+    H[Use Cases] --> I[File Export]
+    H --> J[UI Generation]
+    H --> K[Database Access]
 
-    UC1 --> FM
-    UC2 --> FM
-    UC3 --> FM
-
-    style ユースケース fill:#f9f,stroke:#333,stroke-width:2px
-    style Factory Method実装 fill:#bbf,stroke:#333,stroke-width:2px
+    I --> A
+    J --> A
+    K --> A
 ```
 
-## 実装例（TypeScript）
+## 3. TypeScript 実装例
 
-### 1. ドキュメントエクスポートの例
+### 3.1 ドキュメントエクスポートの例
 
 ```typescript
 // Product: エクスポーター インターフェース
@@ -123,121 +112,53 @@ const excelFactory = new ExcelExporterFactory();
 console.log(excelFactory.export(data)); // "Exporting {"name":"John Doe","age":30} as Excel"
 ```
 
-### 2. UI コンポーネントの例
-
-```typescript
-// Product: ボタン インターフェース
-interface Button {
-  render(): string;
-  onClick(): void;
-}
-
-// Concrete Products: プラットフォーム固有のボタン
-class WindowsButton implements Button {
-  render(): string {
-    return "Rendering Windows style button";
-  }
-
-  onClick(): void {
-    console.log("Windows button clicked");
-  }
-}
-
-class MacButton implements Button {
-  render(): string {
-    return "Rendering macOS style button";
-  }
-
-  onClick(): void {
-    console.log("macOS button clicked");
-  }
-}
-
-// Creator: 抽象ダイアログクラス
-abstract class Dialog {
-  abstract createButton(): Button;
-
-  render(): void {
-    const button = this.createButton();
-    console.log(button.render());
-  }
-}
-
-// Concrete Creators: プラットフォーム固有のダイアログ
-class WindowsDialog extends Dialog {
-  createButton(): Button {
-    return new WindowsButton();
-  }
-}
-
-class MacDialog extends Dialog {
-  createButton(): Button {
-    return new MacButton();
-  }
-}
-
-// 使用例
-function createDialog(os: string): Dialog {
-  if (os === "Windows") {
-    return new WindowsDialog();
-  } else {
-    return new MacDialog();
-  }
-}
-
-const windowsDialog = createDialog("Windows");
-windowsDialog.render(); // "Rendering Windows style button"
-
-const macDialog = createDialog("Mac");
-macDialog.render(); // "Rendering macOS style button"
-```
-
-## メリット
-
-1. **単一責任の原則に従う**
-
-   - オブジェクトの生成ロジックを一箇所に集中させることができます
-   - 製品のコードと生成のコードを分離できます
-
-2. **オープン/クローズドの原則に従う**
-
-   - 既存のコードを変更することなく、新しい種類の製品を追加できます
-
-3. **柔軟性の向上**
-   - 実行時に動的にオブジェクトの種類を決定できます
-   - 環境やコンテキストに応じて適切なオブジェクトを生成できます
-
-## ユースケース
+## 4. 主なユースケース
 
 1. **ドキュメント変換システム**
 
-   - PDF エクスポーター
-   - Excel エクスポーター
-   - HTML エクスポーター
+   - PDF エクスポート
+   - Excel エクスポート
+   - CSV エクスポート
 
-2. **クロスプラットフォーム UI**
+2. **UI コンポーネント生成**
 
-   - Windows 向けコンポーネント
-   - macOS 向けコンポーネント
-   - Web 向けコンポーネント
+   - プラットフォーム固有のボタン
+   - フォーム要素
+   - ダイアログ
 
 3. **データベース接続**
-   - MySQL 接続
-   - PostgreSQL 接続
-   - MongoDB 接続
+   - 異なるデータベースへの接続
+   - 接続プールの管理
+   - クエリビルダー
 
-## 実装時の注意点
+## 5. メリット
 
-1. **過度な抽象化を避ける**
+1. **カプセル化**
 
-   - 必要以上に複雑な階層構造を作らない
-   - 実際に必要な機能に焦点を当てる
+   - オブジェクト生成ロジックを集中管理
+   - 製品の実装を隠蔽
 
-2. **命名規則の統一**
+2. **拡張性**
 
-   - Creator（作成者）と Product（製品）の関係が分かりやすい命名を心がける
-   - インターフェースと実装の命名の一貫性を保つ
+   - 新しい製品クラスの追加が容易
+   - 既存コードの変更なしで機能追加可能
 
-3. **エラーハンドリング**
-   - オブジェクト生成時の例外処理を適切に行う
-   - 無効なパラメータや状態への対応を考慮する
+3. **テスト容易性**
+   - モック・オブジェクトの作成が容易
+   - 依存性の注入が簡単
+
+## 6. 実装時の注意点
+
+1. **適切な抽象化レベル**
+
+   - 必要以上に複雑にしない
+   - インターフェースをシンプルに保つ
+
+2. **名前付けの規則**
+
+   - わかりやすい命名を心がける
+   - パターンの意図を反映した名前を使用
+
+3. **エラー処理**
+   - 生成失敗時の適切なエラーハンドリング
+   - null/undefined の適切な処理
